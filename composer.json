@@ -1,0 +1,34 @@
+{
+    "name": "my/app",
+    "type": "package",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\Test\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "7.4.*",
+        "ext-json": "7.4.*",
+        "ext-curl": "7.4.*",
+        "ext-bcmath": "7.4.*",
+        "symfony/serializer": "5.4.14",
+        "symfony/property-access": "5.4.11",
+        "symfony/validator": "5.4.14",
+        "justinrainbow/json-schema": "5.2.12",
+        "symfony/dependency-injection": "5.4.13",
+        "symfony/yaml": "5.4.14",
+        "symfony/http-client": "5.4.15",
+        "symfony/config": "5.4.11",
+        "symfony/cache": "5.4.15",
+        "symfony/dotenv": "5.4.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9.5.26"
+    }
+}

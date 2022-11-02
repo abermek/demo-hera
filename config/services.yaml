@@ -1,0 +1,79 @@
+parameters:
+  commission_currency: EUR
+  commission_fee_multiplier_eu: .01
+  commission_fee_multiplier: .02
+  exchange_rates_api_key: ''
+
+services:
+  Symfony\Contracts\HttpClient\HttpClientInterface: '@http'
+  Symfony\Component\Validator\Validator\ValidatorInterface: '@validator'
+  Symfony\Component\Serializer\SerializerInterface: '@serializer'
+  Symfony\Contracts\Cache\CacheInterface: '@cache'
+
+  App\Contract\Commission\CalculatorInterface: '@App\Service\Commission\Calculator'
+  App\Contract\Commission\ConverterInterface: '@App\Service\Commission\Converter'
+  App\Contract\BIN\ResolverInterface: '@App\Service\BIN\Resolver\BinLookupResolver'
+
+  validator:
+    factory: [ 'Symfony\Component\Validator\Validation', 'createValidator' ]
+
+  serializer:
+    class: Symfony\Component\Serializer\Serializer
+    arguments:
+      - ['@Symfony\Component\Serializer\Normalizer\ObjectNormalizer' ]
+      - ['@Symfony\Component\Serializer\Encoder\JsonEncoder']
+
+  cache:
+    class: Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter
+
+  http:
+    factory: [ 'Symfony\Component\HttpClient\HttpClient', 'create' ]
+
+  json_schema_validator:
+    class: JsonSchema\Validator
+
+  Symfony\Component\Serializer\Normalizer\ObjectNormalizer:
+    class: Symfony\Component\Serializer\Normalizer\ObjectNormalizer
+
+  Symfony\Component\Serializer\Encoder\JsonEncoder:
+    class: Symfony\Component\Serializer\Encoder\JsonEncoder
+
+  App\Service\Commission\Calculator:
+    class: App\Service\Commission\Calculator
+    arguments:
+      - '@App\Contract\Commission\ConverterInterface'
+      - '@App\Contract\BIN\ResolverInterface'
+      - '%commission_fee_multiplier_eu%'
+      - '%commission_fee_multiplier%'
+
+  App\Service\Commission\Converter:
+    class: App\Service\Commission\Converter
+    arguments:
+      - '%commission_currency%'
+      - '@App\Service\ExchangeRate\ExchangeRateApi'
+
+  App\Service\Transformer\StringToTransactionTransformer:
+    class: App\Service\Transformer\StringToTransactionTransformer
+    arguments:
+      - '@Symfony\Component\Validator\Validator\ValidatorInterface'
+      - '@Symfony\Component\Serializer\SerializerInterface'
+
+  App\Service\BinLookup\BinLookupApi:
+    class: App\Service\BinLookup\BinLookupApi
+    arguments:
+      - '@Symfony\Contracts\HttpClient\HttpClientInterface'
+      - '@Symfony\Component\Validator\Validator\ValidatorInterface'
+      - '@Symfony\Component\Serializer\SerializerInterface'
+      - '@cache'
+
+  App\Service\BIN\Resolver\BinLookupResolver:
+    class: App\Service\BIN\Resolver\BinLookupResolver
+    arguments:
+      - '@App\Service\BinLookup\BinLookupApi'
+
+  App\Service\ExchangeRate\ExchangeRateApi:
+    class: App\Service\ExchangeRate\ExchangeRateApi
+    arguments:
+      - '%exchange_rates_api_key%'
+      - '@http'
+      - '@cache'
